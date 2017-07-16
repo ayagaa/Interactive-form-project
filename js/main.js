@@ -15,19 +15,19 @@ $(this).on('DOMContentLoaded', () => {
     $('#cvv').attr('maxLength', '3');
 
     //Label element that will be displayed when user does not pick a shirt
-    const $shirtAlert = $("<label>Don't forget to pick a T-Shirt</label>");
+    const $shirtAlert = $("<label class='shirt-error'>Don't forget to pick a T-Shirt</label>");
     $shirtAlert.css({ 'font-weight': 'bold', 'color': 'darkred', 'margin-bottom': '1.5em' });
 
 
     //Label element that will be displayed when user does not select a payment method
-    const $payInfoAlert = $("<label>Please select a payment method</label>");
+    const $payInfoAlert = $("<label class='pay-error'>Please select a payment method</label>");
     $payInfoAlert.css({ 'font-weight': 'bold', 'color': 'darkred', 'margin-bottom': '1.5em' });
 
     //Variable that holds all check boxes in the activities fieldset
     const $activityCheckBoxes = $(".activities label input");
     //Variable that holds the total price display element
     const $activitiesTotalPrice = $('<label id="total-price-value">0.00</label>');
-    const $activityError = $("<label id='activity-error'>Please register for at least one activity</label>");
+    const $activityError = $("<label id='activity-error' class='activity-error'>Please register for at least one activity</label>");
     $activityError.css({ 'font-weight': 'bold', 'color': 'darkred', 'margin-bottom': '1.5em' });
     //Variable that holds the calculated total price for all selected activities
     let totalPrice = 0;
@@ -282,9 +282,9 @@ $(this).on('DOMContentLoaded', () => {
         //Remove the total price display
         $('#total-price-value').remove();
         $('#activity-error').remove();
-        removeErrorClass('activity-error');
         const $parent = $('.activities');
         if (totalPrice > 0) {
+            removeErrorClass('activity-error');
             $parent.append($activitiesTotalPrice);
             $('#total-price-value').text('Total Price: $' + totalPrice.toString());
         } else {
@@ -315,8 +315,8 @@ $(this).on('DOMContentLoaded', () => {
         validateName();
         validateEmail();
         toggleShirtAlert();
-        toggleActivityAlert();
         togglePayInfoAlert();
+        toggleActivityAlert();
         if ($('#payment option:selected').text() === 'Credit Card') {
             validateCCNumber();
             validateZip();
@@ -457,8 +457,13 @@ $(this).on('DOMContentLoaded', () => {
     $('form').on('submit', (event) => {
         event.preventDefault();
         validateSubmit();
+        //Double check before showing success method
         const $formErrors = $("form[class*='-error']");
-        if ($formErrors.length === 0) {
+        const $activityError = $('.activity-error');
+        const $shirtError = $('.shirt-error');
+        const $payError = $('.pay-error');
+        if ($formErrors.length === 0 && $activityError.length === 0 &&
+            $shirtError.length === 0 && $payError.length === 0) {
             alert('Your details were successfully submitted.');
         }
     });
