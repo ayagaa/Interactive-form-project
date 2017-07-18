@@ -14,13 +14,17 @@ $(this).on('DOMContentLoaded', () => {
     //Set maximum length for cvv input
     $('#cvv').attr('maxLength', '3');
 
+    //Select and hide the Your Job Role text field
+    const $otherTitle = $('#other-title');
+    $otherTitle.hide();
+
     //Label element that will be displayed when user does not pick a shirt
-    const $shirtAlert = $("<label class='shirt-error'>Don't forget to pick a T-Shirt</label>");
+    const $shirtAlert = $("<label id='shirt-info-error' class='shirt-error'>Don't forget to pick a T-Shirt</label>");
     $shirtAlert.css({ 'font-weight': 'bold', 'color': 'darkred', 'margin-bottom': '1.5em' });
 
 
     //Label element that will be displayed when user does not select a payment method
-    const $payInfoAlert = $("<label class='pay-error'>Please select a payment method</label>");
+    const $payInfoAlert = $("<label id='pay-info-error' class='pay-error'>Please select a payment method</label>");
     $payInfoAlert.css({ 'font-weight': 'bold', 'color': 'darkred', 'margin-bottom': '1.5em' });
 
     //Variable that holds all check boxes in the activities fieldset
@@ -34,8 +38,9 @@ $(this).on('DOMContentLoaded', () => {
 
     //When error is encountered then errorClass is added to the form element
     const addErrorClass = (errorClass) => {
+        const test = document.getElementsByClassName(errorClass);
         //Ensure the class does not exist so that we add it only once
-        if (!$("form ." + errorClass)) {
+        if (!test) {
             $('form').addClass(errorClass);
         }
     }
@@ -135,20 +140,39 @@ $(this).on('DOMContentLoaded', () => {
         }
     }
 
+    //Show an error message if credit card details are not valid
+    const showCreditCardError = () => {
+        //Check if there the pay-info-error is on display
+        let payInfoErrorLabel = document.getElementById('pay-info-error');
+        if (!payInfoErrorLabel) {
+            addErrorClass('pay-error');
+            $payInfoAlert.text('Please enter correct credit card information');
+            $payInfoAlert.insertAfter($($('#payment').parent().children(':first-child')));
+        } else {
+            $('#pay-info-error').text('Please enter correct credit card information');
+        }
+    }
+
     //Validates the input on the credit card  number text box
     //Credit card field should only accept a number between 13 and 16 digits 
     //if the test fails an error will display
     const validateCCNumber = () => {
         const ccNumber = $('#cc-num').val();
+        let hasError = false;
         if (ccNumber.length >= 13 && ccNumber.length <= 16) {
             removeErrorClass('cc-num-error');
             clearError($('#cc-num'), $("label[for='cc-num']"), 'Card Number:');
         } else if (ccNumber.length === 0) {
+            hasError = true;
             addErrorClass('cc-num-error');
             showError($('#cc-num'), $("label[for='cc-num']"), 'Please enter a credit card number');
         } else if (ccNumber.length > 0 && ccNumber.length < 13) {
+            hasError = true;
             addErrorClass('cc-num-error');
             showError($('#cc-num'), $("label[for='cc-num']"), 'Card number is between 13 and 16 digits');
+        }
+        if (hasError) {
+            showCreditCardError();
         }
     }
 
@@ -157,15 +181,21 @@ $(this).on('DOMContentLoaded', () => {
     //if the test fails an error will display
     const validateZip = () => {
         const zip = $('#zip').val();
+        let hasError = false;
         if (zip.length === 0) {
+            hasError = true;
             addErrorClass('zip-error');
             showError($('#zip'), $("label[for='zip']"), 'Enter zip code');
         } else if (zip.length > 0 && zip.length < 5) {
+            hasError = true;
             addErrorClass('zip-error');
             showError($('#zip'), $("label[for='zip']"), 'Zip is 5 digits');
         } else if (zip.length === 5) {
             removeErrorClass('zip-error');
             clearError($('#zip'), $("label[for='zip']"), 'Zip Code:');
+        }
+        if (hasError) {
+            showCreditCardError();
         }
     }
 
@@ -174,15 +204,21 @@ $(this).on('DOMContentLoaded', () => {
     //if the test fails an error will display
     const validateCVV = () => {
         const zip = $('#cvv').val();
+        let hasError = false;
         if (zip.length > 0 && zip.length < 3) {
+            hasError = true;
             addErrorClass('cvv-error');
             showError($('#cvv'), $("label[for='cvv']"), 'CVV is 3 digits');
         } else if (zip.length === 0) {
+            hasError = true;
             addErrorClass('cvv-error');
             showError($('#cvv'), $("label[for='cvv']"), 'Enter CVV');
         } else if (zip.length === 3) {
             removeErrorClass('cvv-error');
             clearError($('#cvv'), $("label[for='cvv']"), 'CVV:');
+        }
+        if (hasError) {
+            showCreditCardError();
         }
     }
 
@@ -205,15 +241,14 @@ $(this).on('DOMContentLoaded', () => {
     //A text field will be revealed 
     //when the "Other" option is selected from the "Job Role" drop down menu.
     const toggleOtherJobRole = () => {
-        //Give the field an id of “other-title,” and add the placeholder text of "Your Job Role" to the field.
-        const $otherTitle = $("<input type='text' id='other-title' placeholder='Your Job Role'>");
-        //If the selected option is 'Other' append the Your Job Role text input
-        //else remove it from the DOM
+        //If the selected option is 'Other' show the Your Job Role text input
+        //else hide it
         if ($('#title option:selected').text() === 'Other') {
-            const $parent = $(event.target).parent();
-            $parent.append($otherTitle);
+            // const $parent = $(event.target).parent();
+            // $parent.append($otherTitle);
+            $otherTitle.show();
         } else {
-            $('#other-title').remove();
+            $('#other-title').hide();
         }
     }
 
@@ -306,6 +341,7 @@ $(this).on('DOMContentLoaded', () => {
         //Add the error message
         if ($selectedMethod.length === 0) {
             addErrorClass('pay-error');
+            $payInfoAlert.text('Please select a payment method');
             $payInfoAlert.insertAfter($($('#payment').parent().children(':first-child')));
         }
     }
@@ -455,16 +491,22 @@ $(this).on('DOMContentLoaded', () => {
     //Attach the submit event triggered when the user presses the Enter key or
     //clicks on the submit button
     $('form').on('submit', (event) => {
-        event.preventDefault();
         validateSubmit();
         //Double check before showing success method
-        const $formErrors = $("form[class*='-error']");
-        const $activityError = $('.activity-error');
-        const $shirtError = $('.shirt-error');
-        const $payError = $('.pay-error');
-        if ($formErrors.length === 0 && $activityError.length === 0 &&
-            $shirtError.length === 0 && $payError.length === 0) {
+        //Check for the class form-error that is added to any input element
+        //that has an error
+        const formErrors = document.querySelector('.form-error');
+        //Check if the activity-error label is being displayed
+        const activityError = document.getElementById('activity-error');
+        //Check if the shirt-info-error is being displayed
+        const shirtError = document.getElementById('shirt-info-error');
+        //Check if the pay-info-error is being displayed
+        const payError = document.getElementById('pay-info-error');
+        //Only allow submit to continue if no errors are found
+        if (!formErrors && !activityError && !shirtError && !payError) {
             alert('Your details were successfully submitted.');
+        } else {
+            event.preventDefault();
         }
     });
 
