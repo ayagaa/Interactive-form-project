@@ -153,6 +153,16 @@ $(this).on('DOMContentLoaded', () => {
         }
     }
 
+    //Hides credit card error message if no errors are present
+    const hideCreditCardError = () => {
+        const ccNumberError = document.querySelector('.cc-num-error');
+        const zipError = document.querySelector('.zip-error');
+        const cvvError = document.querySelector('.cvv-error');
+        if (!ccNumberError && !zipError && !cvvError) {
+            $('#pay-info-error').remove();
+        }
+    }
+
     //Validates the input on the credit card  number text box
     //Credit card field should only accept a number between 13 and 16 digits 
     //if the test fails an error will display
@@ -173,6 +183,8 @@ $(this).on('DOMContentLoaded', () => {
         }
         if (hasError) {
             showCreditCardError();
+        } else {
+            hideCreditCardError();
         }
     }
 
@@ -196,6 +208,8 @@ $(this).on('DOMContentLoaded', () => {
         }
         if (hasError) {
             showCreditCardError();
+        } else {
+            hideCreditCardError();
         }
     }
 
@@ -219,6 +233,8 @@ $(this).on('DOMContentLoaded', () => {
         }
         if (hasError) {
             showCreditCardError();
+        } else {
+            hideCreditCardError();
         }
     }
 
